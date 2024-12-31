@@ -23,6 +23,31 @@ func main() {
 	failOnError(err, "Failed to open a channel")
 	defer ch.Close()
 
+	ch.QueueDeclare(
+		"inventory_queue", // name
+		true,              // durable
+		false,             // auto-delete
+		false,             // exclusive
+		false,             // no-wait
+		nil,               // arguments
+	)
+
+	ch.QueueBind(
+		"inventory_queue", // queue
+		"order.created",   // routing key
+		"amq.topic",       // exchange
+		false,             // no-wait
+		nil,               // args
+	)
+
+	ch.QueueBind(
+		"inventory_queue", // queue
+		"order.failed",    // routing key
+		"amq.topic",       // exchange
+		false,             // no-wait
+		nil,               // args
+	)
+
 	msgs, err := ch.Consume(
 		"inventory_queue",    // queue
 		"inventory_consumer", // consumer
