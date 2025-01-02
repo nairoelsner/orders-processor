@@ -13,7 +13,7 @@ func PublishMessage(ch *amqp.Channel, exchangeName, routingKey string, body []by
 		false, // Mandatory
 		false, // Immediate
 		amqp.Publishing{
-			ContentType: "text/plain",
+			ContentType: "application/json",
 			Body:        body,
 		},
 	)
