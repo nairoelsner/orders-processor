@@ -9,7 +9,7 @@ import (
 func ConsumeMessages(ch *amqp.Channel, queueName string, messages chan<- amqp.Delivery) {
 	msgs, err := ch.Consume(
 		queueName,
-		"",
+		"inventory-consumer",
 		false, // Auto-acknowledge
 		false, // Not exclusive
 		false, // No-local
