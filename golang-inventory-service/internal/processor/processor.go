@@ -74,6 +74,6 @@ func handleOrderCreated(body []byte) ([]byte, error) {
 func handleOrderFailed(delivery amqp.Delivery) error {
 	var order Order
 	json.Unmarshal(delivery.Body, &order)
-	fmt.Println("Repondo o estoque da order:", order)
+	fmt.Println("Repondo o estoque da order:", order.Id)
 	return nil
 }
