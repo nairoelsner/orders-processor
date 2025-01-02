@@ -4,6 +4,7 @@ import (
 	"inventory-service/internal/config"
 	"inventory-service/internal/consumer"
 	"inventory-service/internal/processor"
+	"inventory-service/internal/producer"
 	"log"
 
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -26,11 +27,16 @@ func main() {
 	}
 
 	messages := make(chan amqp.Delivery)
+
 	go consumer.ConsumeMessages(ch, "inventory_queue", messages)
 
-	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
+	log.Printf("[*] Waiting for messages. To exit press CTRL+C")
 	for msg := range messages {
-		processor.ProcessMessage(msg)
-		//producer.PublishMessage(ch, exchangeName, routingKey, processed)
+		processed, err := processor.ProcessMessage(msg)
+		if err != nil {
+			log.Printf("Error processing message: %s", err)
+			continue
+		}
+		producer.PublishMessage(ch, exchangeName, processed.RoutingKey, processed.Body)
 	}
 }
