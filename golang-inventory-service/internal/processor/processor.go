@@ -36,7 +36,7 @@ func ProcessMessage(msg amqp.Delivery) (ProcessedMessage, error) {
 
 		return ProcessedMessage{"order.inventory.available", body}, nil
 
-	case "order.failed":
+	case "order.payment.denied":
 		fmt.Println("Order falhou -> Repor o estoque")
 		err := handleOrderFailed(msg)
 		if err != nil {
@@ -74,6 +74,6 @@ func handleOrderCreated(body []byte) ([]byte, error) {
 func handleOrderFailed(delivery amqp.Delivery) error {
 	var order Order
 	json.Unmarshal(delivery.Body, &order)
-	fmt.Println(order)
+	fmt.Println("Repondo o estoque da order:", order)
 	return nil
 }
