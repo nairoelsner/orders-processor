@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 	"payment-service/internal/config"
 	"payment-service/internal/consumer"
 	"payment-service/internal/processor"
@@ -11,7 +12,7 @@ import (
 )
 
 func main() {
-	rabbitURL := "amqp://guest:guest@localhost:5672/"
+	rabbitURL := getEnv("RABBITMQ_URI", "amqp://guest:guest@localhost:5672/")
 
 	conn, ch := config.ConnectRabbitMQ(rabbitURL)
 	defer conn.Close()
@@ -39,4 +40,11 @@ func main() {
 		}
 		producer.PublishMessage(ch, exchangeName, processed.RoutingKey, processed.Body)
 	}
+}
+
+func getEnv(key, fallback string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return fallback
 }

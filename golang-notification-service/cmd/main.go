@@ -5,12 +5,13 @@ import (
 	"notification-service/internal/config"
 	"notification-service/internal/consumer"
 	"notification-service/internal/processor"
+	"os"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 func main() {
-	rabbitURL := "amqp://guest:guest@localhost:5672/"
+	rabbitURL := getEnv("RABBITMQ_URI", "amqp://guest:guest@localhost:5672/")
 
 	conn, ch := config.ConnectRabbitMQ(rabbitURL)
 	defer conn.Close()
@@ -37,4 +38,11 @@ func main() {
 			continue
 		}
 	}
+}
+
+func getEnv(key, fallback string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return fallback
 }
