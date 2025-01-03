@@ -1,10 +1,44 @@
 services:
   rabbitmq:
-    image: rabbitmq:3-management-alpine
-    container_name: 'rabbitmq'
+    image: rabbitmq:4-management
+    container_name: 'rabbitmq-service'
     ports:
         - 5672:5672
         - 15672:15672
     volumes:
         - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
         - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api-nestjs:
+    build:
+      context: ./nestjs-api
+    container_name: nestjs-api
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./nestjs-api:/usr/src/app:cached
+      - /usr/src/app/node_modules
+    environment:
+      NODE_ENV: development
+      RABBITMQ_URI: amqp://guest:guest@rabbitmq-service:5672
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    command: npm run start:dev
+  
+  inventory-service:
+    build:
+      context: ./golang-inventory-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      RABBITMQ_URI: amqp://guest:guest@rabbitmq-service:5672
+    command: ["./main"]
